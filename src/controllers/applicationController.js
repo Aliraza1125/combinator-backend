@@ -61,8 +61,11 @@
               .populate('userId', 'name email');
           } else {
             // Regular users get only their applications
-            applications = await StartupApplication.find({ userId })
-              .sort({ createdAt: -1 });
+            // applications = await StartupApplication.find({ userId })
+            //   .sort({ createdAt: -1 });
+            applications = await StartupApplication.find()
+            .sort({ createdAt: -1 })
+            .populate('userId', 'name email');
           }
       
           return res.status(EHttpStatusCode.SUCCESS).json({ applications });
