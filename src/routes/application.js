@@ -7,7 +7,7 @@ const applicationRouter = Router();
 
 // Apply auth middleware to all routes
 applicationRouter.use(authMiddleware);
-
+applicationRouter.post("/:id/views", applicationController.incrementViews);
 // Regular application routes
 applicationRouter.post("/", applicationController.createApplication);
 applicationRouter.get("/", applicationController.getApplications);

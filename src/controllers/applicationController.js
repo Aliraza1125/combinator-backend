@@ -25,7 +25,7 @@
     updateApplication: async (req, res) => {
         try {
         const { id } = req.params;
-        const userId = req.user.id;
+        const userId = req.user._id;
 
         const application = await StartupApplication.findOneAndUpdate(
             { _id: id, userId },
@@ -96,10 +96,11 @@
         }
       },
 
-
-      getApplicationById: async (req, res) => {
+      incrementViews: async (req, res) => {
         try {
           const { id } = req.params;
+          const userId = req.user?._id; // User ID if logged in, undefined if not
+    
           const application = await StartupApplication.findById(id);
     
           if (!application) {
@@ -107,14 +108,79 @@
               .json({ message: "Application not found" });
           }
     
-          return res.status(EHttpStatusCode.SUCCESS).json({ application });
+          // Initialize views object if it doesn't exist
+          if (!application.views) {
+            application.views = {
+              total: 0,
+              uniqueUsers: [],
+              history: []
+            };
+          }
+    
+          // Always increment total views
+          application.views.total += 1;
+    
+          // If user is logged in, track unique views
+          if (userId) {
+            // Check if this user has viewed before
+            const hasViewed = application.views.uniqueUsers.includes(userId);
+            
+            if (!hasViewed) {
+              // Add to unique users list
+              application.views.uniqueUsers.push(userId);
+            }
+    
+            // Add to view history
+            application.views.history.push({
+              userId,
+              timestamp: new Date()
+            });
+          }
+    
+          await application.save();
+    
+          return res.status(EHttpStatusCode.SUCCESS).json({
+            message: "View counted successfully",
+            views: {
+              total: application.views.total,
+              unique: application.views.uniqueUsers.length
+            }
+          });
+        } catch (error) {
+          console.error("Increment views error:", error);
+          return res.status(EHttpStatusCode.INTERNAL_SERVER)
+            .json({ message: "Failed to increment views" });
+        }
+      },
+    
+      getApplicationById: async (req, res) => {
+        try {
+          const { id } = req.params;
+          const application = await StartupApplication.findById(id)
+            .populate('userId', 'name email')
+            .populate('views.uniqueUsers', 'name email');
+    
+          if (!application) {
+            return res.status(EHttpStatusCode.NOT_FOUND)
+              .json({ message: "Application not found" });
+          }
+    
+          return res.status(EHttpStatusCode.SUCCESS).json({ 
+            application: {
+              ...application.toObject(),
+              views: {
+                total: application.views?.total || 0,
+                unique: application.views?.uniqueUsers?.length || 0
+              }
+            }
+          });
         } catch (error) {
           console.error("Get application error:", error);
           return res.status(EHttpStatusCode.INTERNAL_SERVER)
             .json({ message: "Failed to retrieve application" });
         }
       },
-    
+
 
     deleteApplication: async (req, res) => {
         try {

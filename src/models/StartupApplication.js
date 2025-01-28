@@ -66,13 +66,26 @@ const applicationSchema = new mongoose.Schema({
     required: true
   },
   logo: {
-    type: String
+    type: String,
+    required: true
+  },
+  banner: {
+    type: String,
+    required: true
   },
   status: {
     type: String,
     required: true,
     enum: ['draft', 'submitted', 'under_review', 'approved', 'rejected', 'info_requested'],
     default: 'under_review'
+  },
+  views: {
+    total: { type: Number, default: 0 },
+    uniqueUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    history: [{
+      userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+      timestamp: { type: Date, default: Date.now }
+    }]
   }
 }, {
   timestamps: true
