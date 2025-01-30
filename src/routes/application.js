@@ -15,6 +15,9 @@ applicationRouter.get("/:id", applicationController.getApplicationById);
 applicationRouter.put("/:id", applicationController.updateApplication);
 applicationRouter.delete("/:id", applicationController.deleteApplication);
 
+applicationRouter.put("/:id/team-members", applicationController.addTeamMember);
+applicationRouter.put("/:id/updates", applicationController.addUpdate);
+applicationRouter.put("/:id/investments", applicationController.addInvestment);
 // Admin-specific routes
 applicationRouter.patch("/:id/status", applicationController.updateApplicationStatus);
 applicationRouter.get("/admin/all", applicationController.getAllApplications); // Optional: separate admin endpoint
